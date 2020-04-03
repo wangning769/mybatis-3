@@ -47,6 +47,7 @@ import org.apache.ibatis.session.defaults.DefaultSqlSessionFactory;
  * 			ConfigBuilder -> DefaultSqlSessionFactory
  * 
  * rethinking:
+ *  1.工厂模式:
  * 	StringBuilder是jdk源码中典型的建造者模式
  * 		StringBuilder sb = new StringBuilder();		//一间毛坯房	
  *      	sb.append("厨房").append("厕所");		// “设计” 厨房 和 厕所，卧室呢？
@@ -60,7 +61,11 @@ import org.apache.ibatis.session.defaults.DefaultSqlSessionFactory;
  *     		-> XMLConfigBuilder.build(); //开始构建 ->返回构建 Configuration
  *      		
  *      		->new DefaultSqlSessionFactory(Configuration);//修建好工厂可以生产SqlSession实例了
- * 
+ *  
+ *  2.XMLConfigBuilder实现是啥?
+ *  		ConfigBuilder实现又是啥? 
+ *    			DefaultSqlSessionFactory实现双是啥？
+ *    
  * @author rethink
  *
  */

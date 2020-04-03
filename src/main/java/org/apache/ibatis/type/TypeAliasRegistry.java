@@ -101,13 +101,18 @@ public class TypeAliasRegistry {
   }
 
   @SuppressWarnings("unchecked")
-  // throws class cast exception as well if types cannot be assigned
+  //别名解析
   public <T> Class<T> resolveAlias(String string) {
     try {
       if (string == null) {
         return null;
       }
       // issue #748
+      //学到了，这里是copy另外一个人的，长见识了
+      //先转成小写再解析
+      //这里转个小写也有bug？见748号bug(在google code上)
+      //https://code.google.com/p/mybatis/issues
+      //比如如果本地语言是Turkish，那i转成大写就不是I了，而是另外一个字符（İ）。这样土耳其的机器就用不了mybatis了！这是一个很大的bug，但是基本上每个人都会犯......
       String key = string.toLowerCase(Locale.ENGLISH);
       Class<T> value;
       if (typeAliases.containsKey(key)) {

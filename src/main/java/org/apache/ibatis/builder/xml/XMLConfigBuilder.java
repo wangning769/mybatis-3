@@ -51,6 +51,14 @@ import org.apache.ibatis.type.JdbcType;
  * @author Clinton Begin
  * @author Kazuki Shimizu
  */
+/**
+ * 
+ * XMLConfigBuilder继承BaseBuilder
+ * 
+ * 
+ * @author rethink
+ *
+ */
 public class XMLConfigBuilder extends BaseBuilder {
 
   private boolean parsed;
@@ -82,6 +90,10 @@ public class XMLConfigBuilder extends BaseBuilder {
     this(new XPathParser(inputStream, true, props, new XMLMapperEntityResolver()), environment, props);
   }
 
+  /**
+   *	
+   *@author rethink 
+   */
   private XMLConfigBuilder(XPathParser parser, String environment, Properties props) {
     super(new Configuration());
     ErrorContext.instance().resource("SQL Mapper Configuration");

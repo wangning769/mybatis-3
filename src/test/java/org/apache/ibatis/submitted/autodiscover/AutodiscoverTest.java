@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.Reader;
 import java.math.BigInteger;
+import java.util.Map;
 
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -43,7 +44,10 @@ class AutodiscoverTest {
   @Test
   void testTypeAlias() {
     TypeAliasRegistry typeAliasRegistry = sqlSessionFactory.getConfiguration().getTypeAliasRegistry();
-    typeAliasRegistry.resolveAlias("testAlias");
+    Map<String, Class<?>> map = typeAliasRegistry.getTypeAliases();
+    System.out.println(map);
+   Class<Object> str   = typeAliasRegistry.resolveAlias("testAlias");
+   System.out.println(str);
   }
 
   @Test
