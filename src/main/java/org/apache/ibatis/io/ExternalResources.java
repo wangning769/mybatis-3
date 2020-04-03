@@ -29,6 +29,12 @@ import org.apache.ibatis.logging.LogFactory;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 
+ * @author rethink
+ *	都被@Deprecated了，感兴趣的看下吧
+ */
 @Deprecated
 public class ExternalResources {
 

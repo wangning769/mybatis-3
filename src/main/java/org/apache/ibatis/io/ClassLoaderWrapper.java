@@ -23,13 +23,43 @@ import java.net.URL;
  *
  * @author Clinton Begin
  */
+/**
+ * 
+ *	1.ClassLoaderWrapper类提供5个类加载器，
+ *		将SystemClassLoader类加载作为默认类加载器
+ *
+ *	2.大多数加载方法都是在下面三个方法上的封装
+ *		getResourceAsStream(String resource, ClassLoader[] classLoader)
+ *		classForName(String name, ClassLoader[] classLoader)
+ *		getResourceAsURL(String resource, ClassLoader[] classLoader) 
+ *
+ *	3.提供的5个类加载器，遍历顺序依次是:
+ *  	classLoader > defaultClassLoader >  Thread.currentThread().getContextClassLoader() > getClass().getClassLoader() > systemClassLoader
+ *		参数指定类加载 > Resources指定类加载 > 当前线程指定类加载器	> 当前类使用的类加载器	>	系统类加载器
+ * 
+ * rethinking:
+ * 	1.通过阅读源码，发现Resources.getResourceAsStream> Resources.setDefaultClassLoader,所以在使用时(如果有必要)注意下
+		2.使用前类使用的类加载器可能会造成前后加载不一致	
+ * @author rethink
+ *
+ */
 public class ClassLoaderWrapper {
 
+	/**
+	 * defaultClassLoader类加载器在Resources中初始化，用于初始化自定义类加载器
+	 *	rethinking:
+	 *		systemClassLoader 是真正的默认类加载器
+	 *		defaultClassLoader 程序员自定义的"默认"类加载器
+	 */
   ClassLoader defaultClassLoader;
   ClassLoader systemClassLoader;
 
   ClassLoaderWrapper() {
     try {
+    	/**
+    	 * AppClassloader就是我们所说的系统类加载器，最顶层父类也是ClassLoader
+    	 * defaultClassLoader 你还敢说你是默认类加载器！
+    	 */
       systemClassLoader = ClassLoader.getSystemClassLoader();
     } catch (SecurityException ignored) {
       // AccessControlException on Google App Engine
@@ -201,6 +231,7 @@ public class ClassLoaderWrapper {
 
   }
 
+  //5个类加载器
   ClassLoader[] getClassLoaders(ClassLoader classLoader) {
     return new ClassLoader[]{
         classLoader,
