@@ -52,6 +52,12 @@ import org.apache.ibatis.session.Configuration;
  * @author Clinton Begin
  * @author Kazuki Shimizu
  */
+/**
+ * 类型解析注册
+ * 
+ * @author rethink
+ *
+ */
 public final class TypeHandlerRegistry {
 
   private final Map<JdbcType, TypeHandler<?>>  jdbcTypeHandlerMap = new EnumMap<>(JdbcType.class);
@@ -75,6 +81,10 @@ public final class TypeHandlerRegistry {
    *
    * @param configuration a MyBatis configuration
    * @since 3.5.4
+   */
+  /**
+   * 内置的类型处理器
+   * @param configuration
    */
   public TypeHandlerRegistry(Configuration configuration) {
     this.unknownTypeHandler = new UnknownTypeHandler(configuration);

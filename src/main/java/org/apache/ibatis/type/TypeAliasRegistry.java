@@ -35,6 +35,12 @@ import org.apache.ibatis.io.Resources;
 /**
  * @author Clinton Begin
  */
+/**
+ * 
+ * 常用的类型别名和注册别名的方法
+ * @author rethink
+ *
+ */
 public class TypeAliasRegistry {
 
   private final Map<String, Class<?>> typeAliases = new HashMap<>();
@@ -126,6 +132,7 @@ public class TypeAliasRegistry {
     }
   }
 
+  //扫描整个包
   public void registerAliases(String packageName) {
     registerAliases(packageName, Object.class);
   }
@@ -143,9 +150,12 @@ public class TypeAliasRegistry {
     }
   }
 
+  //扫描别名
   public void registerAlias(Class<?> type) {
     String alias = type.getSimpleName();
+    //注解Alias获得别名
     Alias aliasAnnotation = type.getAnnotation(Alias.class);
+    //如果为空，用Class的SimpleName注册别名
     if (aliasAnnotation != null) {
       alias = aliasAnnotation.value();
     }
@@ -157,7 +167,10 @@ public class TypeAliasRegistry {
       throw new TypeException("The parameter alias cannot be null");
     }
     // issue #748
+    //转换成小写
     String key = alias.toLowerCase(Locale.ENGLISH);
+    //如果存在key && key的值不为null && 原有key的值与value不相同
+    //简单的说就是一个多个value映射成同一个别名了
     if (typeAliases.containsKey(key) && typeAliases.get(key) != null && !typeAliases.get(key).equals(value)) {
       throw new TypeException("The alias '" + alias + "' is already mapped to the value '" + typeAliases.get(key).getName() + "'.");
     }

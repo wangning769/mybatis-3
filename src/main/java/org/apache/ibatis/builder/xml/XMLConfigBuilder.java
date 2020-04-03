@@ -53,15 +53,17 @@ import org.apache.ibatis.type.JdbcType;
  */
 /**
  * 
- * XMLConfigBuilder继承BaseBuilder
- * 
+ * XMLConfigBuilder继承BaseBuilder，
+ * 	在构建时在父类初始化了部分常用 
+ * 		类型别名注册(TypeAliasRegistry) 
+ * 		类型解析注册(TypeHandlerRegistry)
  * 
  * @author rethink
  *
  */
 public class XMLConfigBuilder extends BaseBuilder {
 
-  private boolean parsed;
+  private boolean parsed;//是否解析
   private final XPathParser parser;
   private String environment;
   private final ReflectorFactory localReflectorFactory = new DefaultReflectorFactory();
@@ -91,12 +93,14 @@ public class XMLConfigBuilder extends BaseBuilder {
   }
 
   /**
-   *	
+   * XMLConfigBuilder核心构造函数
    *@author rethink 
    */
   private XMLConfigBuilder(XPathParser parser, String environment, Properties props) {
-    super(new Configuration());
+	  //调用父类构造方法
+	super(new Configuration());
     ErrorContext.instance().resource("SQL Mapper Configuration");
+    //设置Configuration中Properties内容
     this.configuration.setVariables(props);
     this.parsed = false;
     this.environment = environment;
@@ -108,6 +112,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       throw new BuilderException("Each XMLConfigBuilder can only be used once.");
     }
     parsed = true;
+    //congfiguration根节点
     parseConfiguration(parser.evalNode("/configuration"));
     return configuration;
   }
