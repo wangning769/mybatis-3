@@ -22,5 +22,8 @@ public class EnterMain {
         SqlSession sqlSession = sqlSessionFactory.openSession();
         User user = sqlSession.selectOne("MyMapper.selectUser", 1);
         System.out.println(user);
+        StringBuilder sBuilder = new StringBuilder();
+        sBuilder.append("a").append("b");
+       
 	}
 }

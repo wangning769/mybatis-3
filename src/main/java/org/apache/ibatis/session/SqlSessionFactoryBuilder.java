@@ -30,6 +30,40 @@ import org.apache.ibatis.session.defaults.DefaultSqlSessionFactory;
  *
  * @author Clinton Begin
  */
+
+/**
+ * 先建造工厂，再生产加工
+ * 流程:
+ * 	(InputStream/Reader) -> XMLConfigBuilder -> ConfigBuilder -> DefaultSqlSessionFactory
+ * 	
+ * build方法，全是build方法
+ * 
+ * 	1)处理加载资源转换成Configuration
+ * 		处理资源inputStream的build	inputStream -> XMLConfigBuilder -> ConfigBuilder
+ * 		处理资源Reader的build					 Reader -> XMLConfigBuilder -> ConfigBuilder
+ * 	 
+ * 	2)处理Configuration 转换成 SqlSessionFactory
+ * 		处理build的build
+ * 			ConfigBuilder -> DefaultSqlSessionFactory
+ * 
+ * rethinking:
+ * 	StringBuilder是jdk源码中典型的建造者模式
+ * 		StringBuilder sb = new StringBuilder();		//一间毛坯房	
+ *      	sb.append("厨房").append("厕所");		// “设计” 厨房 和 厕所，卧室呢？
+ *      	sb.toString();	//开始装修->返回构建 String
+ *    
+ *     XMLConfigBuilder构建mybatis-config.xml配置文件
+ *     	XMLConfigBuilder 
+ *     		-> XMLConfigBuilder.build("数据库连接")
+ *     		-> XMLConfigBuilder.build("管理Mapper.xml映射") 
+ *     		-> XMLConfigBuilder.build("...")	//配置文件的中的所有属性
+ *     		-> XMLConfigBuilder.build(); //开始构建 ->返回构建 Configuration
+ *      		
+ *      		->new DefaultSqlSessionFactory(Configuration);//修建好工厂可以生产SqlSession实例了
+ * 
+ * @author rethink
+ *
+ */
 public class SqlSessionFactoryBuilder {
 
   public SqlSessionFactory build(Reader reader) {
@@ -44,6 +78,9 @@ public class SqlSessionFactoryBuilder {
     return build(reader, null, properties);
   }
 
+  /**
+   * Reader -> XMLConfigBuilder -> ConfigBuilder -> DefaultSqlSessionFactory
+   */
   public SqlSessionFactory build(Reader reader, String environment, Properties properties) {
     try {
       XMLConfigBuilder parser = new XMLConfigBuilder(reader, environment, properties);
@@ -72,6 +109,9 @@ public class SqlSessionFactoryBuilder {
     return build(inputStream, null, properties);
   }
 
+  /**
+   * inputStream -> XMLConfigBuilder -> ConfigBuilder -> DefaultSqlSessionFactory
+   */
   public SqlSessionFactory build(InputStream inputStream, String environment, Properties properties) {
     try {
       XMLConfigBuilder parser = new XMLConfigBuilder(inputStream, environment, properties);

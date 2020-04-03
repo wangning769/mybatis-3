@@ -22,6 +22,23 @@ import java.sql.Connection;
  *
  * @author Clinton Begin
  */
+
+/**
+ * @author rethink
+ *
+ *	工厂模式，构建SqlSession 
+ *	
+ *	提供了 4 + 4 + 1的方法
+ *		4:	普通openSession方法
+ *
+ *		4:	带ExecutorType的openSession方法
+ *
+ *		1:	工厂配置
+ *
+ *	rethinking:
+ *		ExecutorType是干啥的？
+ */
+
 public interface SqlSessionFactory {
 
   SqlSession openSession();
@@ -32,6 +49,7 @@ public interface SqlSessionFactory {
 
   SqlSession openSession(TransactionIsolationLevel level);
 
+  
   SqlSession openSession(ExecutorType execType);
 
   SqlSession openSession(ExecutorType execType, boolean autoCommit);
