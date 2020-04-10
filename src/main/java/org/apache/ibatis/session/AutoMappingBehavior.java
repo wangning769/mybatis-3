@@ -20,6 +20,11 @@ package org.apache.ibatis.session;
  *
  * @author Eduardo Macarron
  */
+/**
+ * 自动映射设置
+ * @author rethink
+ *
+ */
 public enum AutoMappingBehavior {
 
   /**

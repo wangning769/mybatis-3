@@ -57,7 +57,8 @@ import org.apache.ibatis.type.JdbcType;
  * 	在构建时在父类初始化了部分常用 
  * 		类型别名注册(TypeAliasRegistry) 
  * 		类型解析注册(TypeHandlerRegistry)
- * 
+ * 	
+ * parseConfiguration方法的信息
  * @author rethink
  *
  */
@@ -120,20 +121,32 @@ public class XMLConfigBuilder extends BaseBuilder {
   private void parseConfiguration(XNode root) {
     try {
       // issue #117 read properties first
+    //1.加载properties节点文件
       propertiesElement(root.evalNode("properties"));
+      //2.解析settings
       Properties settings = settingsAsProperties(root.evalNode("settings"));
       loadCustomVfs(settings);
       loadCustomLogImpl(settings);
+      //3.类型别名
       typeAliasesElement(root.evalNode("typeAliases"));
+      //4.插件信息
       pluginElement(root.evalNode("plugins"));
+      //5.对象工厂
       objectFactoryElement(root.evalNode("objectFactory"));
+      //6.对象包装工厂
       objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
+      //7.反射工厂
       reflectorFactoryElement(root.evalNode("reflectorFactory"));
+      //8.默认设置
       settingsElement(settings);
       // read it after objectFactory and objectWrapperFactory issue #631
+      //9.环境
       environmentsElement(root.evalNode("environments"));
+      //10.databaseIdProvider
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
+      //11.类型处理器
       typeHandlerElement(root.evalNode("typeHandlers"));
+      //12.映射器
       mapperElement(root.evalNode("mappers"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
@@ -177,14 +190,17 @@ public class XMLConfigBuilder extends BaseBuilder {
   private void typeAliasesElement(XNode parent) {
     if (parent != null) {
       for (XNode child : parent.getChildren()) {
+    	  //如果是包名
         if ("package".equals(child.getName())) {
           String typeAliasPackage = child.getStringAttribute("name");
+          //扫描包下@Alias的注入名称，没有则用SimpleName
           configuration.getTypeAliasRegistry().registerAliases(typeAliasPackage);
         } else {
           String alias = child.getStringAttribute("alias");
           String type = child.getStringAttribute("type");
           try {
             Class<?> clazz = Resources.classForName(type);
+            //如果没有指定别名，则用Class名字
             if (alias == null) {
               typeAliasRegistry.registerAlias(clazz);
             } else {
@@ -203,6 +219,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       for (XNode child : parent.getChildren()) {
         String interceptor = child.getStringAttribute("interceptor");
         Properties properties = child.getChildrenAsProperties();
+        //解析插件类，获取构造方法，new出实例
         Interceptor interceptorInstance = (Interceptor) resolveClass(interceptor).getDeclaredConstructor().newInstance();
         interceptorInstance.setProperties(properties);
         configuration.addInterceptor(interceptorInstance);
@@ -258,32 +275,59 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
   }
 
+  //设置属性
   private void settingsElement(Properties props) {
+	 //自动映射属性
     configuration.setAutoMappingBehavior(AutoMappingBehavior.valueOf(props.getProperty("autoMappingBehavior", "PARTIAL")));
+    // 自动映射设置非已知字段  
     configuration.setAutoMappingUnknownColumnBehavior(AutoMappingUnknownColumnBehavior.valueOf(props.getProperty("autoMappingUnknownColumnBehavior", "NONE")));
+    //缓存
     configuration.setCacheEnabled(booleanValueOf(props.getProperty("cacheEnabled"), true));
+    //延迟加载的核心技术就是用代理模式，CGLIB/JAVASSIST两者选一 学习一下！！！！！！！！
     configuration.setProxyFactory((ProxyFactory) createInstance(props.getProperty("proxyFactory")));
+    //延迟加载
     configuration.setLazyLoadingEnabled(booleanValueOf(props.getProperty("lazyLoadingEnabled"), false));
+    //延迟加载时，每种属性是否还要按需加载
     configuration.setAggressiveLazyLoading(booleanValueOf(props.getProperty("aggressiveLazyLoading"), false));
+    ///允不允许多种结果集从一个单独 的语句中返回
     configuration.setMultipleResultSetsEnabled(booleanValueOf(props.getProperty("multipleResultSetsEnabled"), true));
+    //使用列标签代替列名
     configuration.setUseColumnLabel(booleanValueOf(props.getProperty("useColumnLabel"), true));
+    //允许 JDBC 支持生成的键
     configuration.setUseGeneratedKeys(booleanValueOf(props.getProperty("useGeneratedKeys"), false));
+    //配置默认的执行器
     configuration.setDefaultExecutorType(ExecutorType.valueOf(props.getProperty("defaultExecutorType", "SIMPLE")));
+    //默认超时时间
     configuration.setDefaultStatementTimeout(integerValueOf(props.getProperty("defaultStatementTimeout"), null));
+    //默认读取数据大小
     configuration.setDefaultFetchSize(integerValueOf(props.getProperty("defaultFetchSize"), null));
+    //默认结果姐类型
     configuration.setDefaultResultSetType(resolveResultSetType(props.getProperty("defaultResultSetType")));
+    //是否将DB字段自动映射到驼峰式Java属性（A_COLUMN-->aColumn）
     configuration.setMapUnderscoreToCamelCase(booleanValueOf(props.getProperty("mapUnderscoreToCamelCase"), false));
+    //	嵌套语句上使用RowBounds
     configuration.setSafeRowBoundsEnabled(booleanValueOf(props.getProperty("safeRowBoundsEnabled"), false));
+    //默认用session级别的缓存
     configuration.setLocalCacheScope(LocalCacheScope.valueOf(props.getProperty("localCacheScope", "SESSION")));
+    //为null值设置jdbctype
     configuration.setJdbcTypeForNull(JdbcType.valueOf(props.getProperty("jdbcTypeForNull", "OTHER")));
+    //Object的哪些方法将触发延迟加载
     configuration.setLazyLoadTriggerMethods(stringSetValueOf(props.getProperty("lazyLoadTriggerMethods"), "equals,clone,hashCode,toString"));
+    //	使用安全的ResultHandler
     configuration.setSafeResultHandlerEnabled(booleanValueOf(props.getProperty("safeResultHandlerEnabled"), true));
+    //动态SQL生成语言所使用的脚本语言
     configuration.setDefaultScriptingLanguage(resolveClass(props.getProperty("defaultScriptingLanguage")));
+    //默认枚举处理器
     configuration.setDefaultEnumTypeHandler(resolveClass(props.getProperty("defaultEnumTypeHandler")));
+    //当结果集中含有Null值时是否执行映射对象的setter或者Map对象的put方法。此设置对于原始类型如int,boolean等无效。 
     configuration.setCallSettersOnNulls(booleanValueOf(props.getProperty("callSettersOnNulls"), false));
+    //实际使用参数名称
     configuration.setUseActualParamName(booleanValueOf(props.getProperty("useActualParamName"), true));
+    //为空行设置返回实例
     configuration.setReturnInstanceForEmptyRow(booleanValueOf(props.getProperty("returnInstanceForEmptyRow"), false));
+    //logger名字的前缀
     configuration.setLogPrefix(props.getProperty("logPrefix"));
+    //配置工厂
     configuration.setConfigurationFactory(resolveClass(props.getProperty("configurationFactory")));
   }
 
@@ -295,7 +339,9 @@ public class XMLConfigBuilder extends BaseBuilder {
       for (XNode child : context.getChildren()) {
         String id = child.getStringAttribute("id");
         if (isSpecifiedEnvironment(id)) {
+        	//事务管理器
           TransactionFactory txFactory = transactionManagerElement(child.evalNode("transactionManager"));
+          //数据源
           DataSourceFactory dsFactory = dataSourceElement(child.evalNode("dataSource"));
           DataSource dataSource = dsFactory.getDataSource();
           Environment.Builder environmentBuilder = new Environment.Builder(id)
@@ -307,6 +353,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
   }
 
+  //可以根据不同数据库执行不同的SQL，sql要加databaseId属性
   private void databaseIdProviderElement(XNode context) throws Exception {
     DatabaseIdProvider databaseIdProvider = null;
     if (context != null) {
