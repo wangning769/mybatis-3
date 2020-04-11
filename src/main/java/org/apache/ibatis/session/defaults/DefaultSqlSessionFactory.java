@@ -34,6 +34,12 @@ import org.apache.ibatis.transaction.managed.ManagedTransactionFactory;
 /**
  * @author Clinton Begin
  */
+/**
+ * 默认sqlSessionFactory
+ * 	具体分析下工厂创建的SqlSession,configuration的默认执行器是ExecutorType.SIMPLE
+ * @author rethink
+ *
+ */
 public class DefaultSqlSessionFactory implements SqlSessionFactory {
 
   private final Configuration configuration;
@@ -42,6 +48,7 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
     this.configuration = configuration;
   }
 
+  
   @Override
   public SqlSession openSession() {
     return openSessionFromDataSource(configuration.getDefaultExecutorType(), null, false);
@@ -87,15 +94,24 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
     return configuration;
   }
 
+  /**
+   * 非对外暴露接口,暴露接口在次基础上重传入参数
+   */
   private SqlSession openSessionFromDataSource(ExecutorType execType, TransactionIsolationLevel level, boolean autoCommit) {
     Transaction tx = null;
     try {
+    	//环境
       final Environment environment = configuration.getEnvironment();
+      //从环境种获取环境工厂
       final TransactionFactory transactionFactory = getTransactionFactoryFromEnvironment(environment);
+      //环境工厂产生一个事务
       tx = transactionFactory.newTransaction(environment.getDataSource(), level, autoCommit);
+      //生成一个执行器
       final Executor executor = configuration.newExecutor(tx, execType);
+      //产生一个DefaultSqlSession
       return new DefaultSqlSession(configuration, executor, autoCommit);
     } catch (Exception e) {
+    	//打开事务失败，关闭事务
       closeTransaction(tx); // may have fetched a connection so lets call close()
       throw ExceptionFactory.wrapException("Error opening session.  Cause: " + e, e);
     } finally {
@@ -126,6 +142,7 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
   }
 
   private TransactionFactory getTransactionFactoryFromEnvironment(Environment environment) {
+	//如果没有配置事务工厂，则返回托管事务工厂
     if (environment == null || environment.getTransactionFactory() == null) {
       return new ManagedTransactionFactory();
     }
