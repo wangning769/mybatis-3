@@ -41,12 +41,14 @@ public final class PreparedStatementLogger extends BaseJdbcLogger implements Inv
     this.statement = stmt;
   }
 
+  // 动态代理执行方法，记录执行还是setValue的日志
   @Override
   public Object invoke(Object proxy, Method method, Object[] params) throws Throwable {
     try {
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, params);
       }
+      // 执行方法 addBatch, execute, executeUpdate, executeQuery
       if (EXECUTE_METHODS.contains(method.getName())) {
         if (isDebugEnabled()) {
           debug("Parameters: " + getParameterValueString(), true);
@@ -58,6 +60,12 @@ public final class PreparedStatementLogger extends BaseJdbcLogger implements Inv
         } else {
           return method.invoke(statement, params);
         }
+        /**
+         * setByte, setNull, setSQLXML, setShort, setObject, setNCharacterStream, setDouble, setNClob, 
+         * setCharacterStream, setRef, setBlob, setTimestamp, setTime, setBytes,
+		 * setFloat, setBigDecimal, setUnicodeStream, setInt, setURL, setArray, setLong, setString, 
+         * setAsciiStream, setRowId, setClob, setDate, setBinaryStream, setNString, setBoolean 
+         */
       } else if (SET_METHODS.contains(method.getName())) {
         if ("setNull".equals(method.getName())) {
           setColumn(params[0], null);

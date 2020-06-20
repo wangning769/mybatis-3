@@ -1,14 +1,13 @@
 package read.mybatis.enter;
 
-import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.logging.LogFactory;
 
 public class TestMain {
 
 	public static void main(String[] args) {
-		ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-		System.out.println(classLoader);
-		classLoader = classLoader.getParent().getSystemClassLoader();
-		System.out.println(classLoader);
+
+		
+		LogFactory.useLog4J2Logging();
 		
 		
 

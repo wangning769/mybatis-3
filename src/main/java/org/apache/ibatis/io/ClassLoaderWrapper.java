@@ -204,6 +204,7 @@ public class ClassLoaderWrapper {
    * @param classLoader - the group of classloaders to examine
    * @return the class
    * @throws ClassNotFoundException - Remember the wisdom of Judge Smails: Well, the world needs ditch diggers, too.
+   * 加载类的方法
    */
   Class<?> classForName(String name, ClassLoader[] classLoader) throws ClassNotFoundException {
 

@@ -40,8 +40,8 @@ import org.apache.ibatis.reflection.ArrayUtil;
  */
 public abstract class BaseJdbcLogger {
 
-  protected static final Set<String> SET_METHODS;
-  protected static final Set<String> EXECUTE_METHODS = new HashSet<>();
+  protected static final Set<String> SET_METHODS; //存放PreparedStatement类中的方法
+  protected static final Set<String> EXECUTE_METHODS = new HashSet<>(); //执行方法
 
   private final Map<Object, Object> columnMap = new HashMap<>();
 
@@ -64,6 +64,7 @@ public abstract class BaseJdbcLogger {
   }
 
   static {
+	  // 通过反射获取类的set方法
     SET_METHODS = Arrays.stream(PreparedStatement.class.getDeclaredMethods())
             .filter(method -> method.getName().startsWith("set"))
             .filter(method -> method.getParameterCount() > 1)

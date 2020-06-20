@@ -19,14 +19,28 @@ import java.sql.Connection;
 
 /**
  * @author Clinton Begin
+ * 事务隔离级别isolation
+ * 
+ * 
+	事务隔离级别									脏读				不可重复读				幻读
+	读未提交（read-uncommitted）	是							是							是
+	读已提交（read-committed）		否							是							是
+	可重复读（repeatable-read）		否							否							是
+	串行化（serializable）					否							否							否
+
+ * 
  */
 public enum TransactionIsolationLevel {
+	//不使用事务
   NONE(Connection.TRANSACTION_NONE),
+  //读取已提交
   READ_COMMITTED(Connection.TRANSACTION_READ_COMMITTED),
+  //读取未提交
   READ_UNCOMMITTED(Connection.TRANSACTION_READ_UNCOMMITTED),
+  //可重复读
   REPEATABLE_READ(Connection.TRANSACTION_REPEATABLE_READ),
+  //可序列化
   SERIALIZABLE(Connection.TRANSACTION_SERIALIZABLE);
-
   private final int level;
 
   TransactionIsolationLevel(int level) {
