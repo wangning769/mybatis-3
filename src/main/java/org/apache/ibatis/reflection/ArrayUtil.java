@@ -38,6 +38,11 @@ public class ArrayUtil {
     if (!clazz.isArray()) {
       return obj.hashCode();
     }
+    /*
+     * getComponentType()方法：如果不是数组，则返回null
+     * 											 如果是数组，则返回数组的类型
+     * 例如： int[]的数组，就会返回int
+     */
     final Class<?> componentType = clazz.getComponentType();
     if (long.class.equals(componentType)) {
       return Arrays.hashCode((long[]) obj);

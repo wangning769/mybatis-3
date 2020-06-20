@@ -33,6 +33,10 @@ import org.apache.ibatis.cache.CacheException;
  * @author Eduardo Macarron
  *
  */
+/**
+ *	阻塞缓存 
+ *
+ */
 public class BlockingCache implements Cache {
 
   private long timeout;

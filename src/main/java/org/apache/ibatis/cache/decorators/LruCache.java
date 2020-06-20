@@ -25,6 +25,10 @@ import org.apache.ibatis.cache.Cache;
  *
  * @author Clinton Begin
  */
+/**
+ *
+ * LRU(最近最少使用的缓存)
+ */
 public class LruCache implements Cache {
 
   private final Cache delegate;

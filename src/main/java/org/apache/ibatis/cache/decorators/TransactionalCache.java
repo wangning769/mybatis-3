@@ -35,14 +35,24 @@ import org.apache.ibatis.logging.LogFactory;
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
+
+/**
+ * 事务缓存这里
+ *	TransactionalCache：存放未提交的缓存
+ * PerpetualCache：存放已经提交和调用过getObject的key的缓存
+ * 因此：
+ * 	存放:		putObject(k,v) -> TransactionalCache -> commit() -> PerpetualCache
+ * 	获取:		getObject(key)--------------------------------------------------> PerpetualCache
+ * 	删除:		clear() ------------> TransactionalCache -> commit() -> PerpetualCache
+ */
 public class TransactionalCache implements Cache {
 
   private static final Log log = LogFactory.getLog(TransactionalCache.class);
 
-  private final Cache delegate;
+  private final Cache delegate; // 内部维护的实际缓存操作
   private boolean clearOnCommit;
-  private final Map<Object, Object> entriesToAddOnCommit;
-  private final Set<Object> entriesMissedInCache;
+  private final Map<Object, Object> entriesToAddOnCommit; // 已经提交的缓存条目
+  private final Set<Object> entriesMissedInCache; 	//  不在缓存中的条目
 
   public TransactionalCache(Cache delegate) {
     this.delegate = delegate;
@@ -65,6 +75,8 @@ public class TransactionalCache implements Cache {
   public Object getObject(Object key) {
     // issue #116
     Object object = delegate.getObject(key);
+    
+    //判断是否为null, 加入到"缺少条目的缓存集合中"
     if (object == null) {
       entriesMissedInCache.add(key);
     }
@@ -76,6 +88,7 @@ public class TransactionalCache implements Cache {
     }
   }
 
+  // 暂存到提交时添加条目的集合中，实际在缓存时还差不多，需要调用提交方法才可以
   @Override
   public void putObject(Object key, Object object) {
     entriesToAddOnCommit.put(key, object);
@@ -96,6 +109,7 @@ public class TransactionalCache implements Cache {
     if (clearOnCommit) {
       delegate.clear();
     }
+    // 刷新待处理条目
     flushPendingEntries();
     reset();
   }
@@ -105,6 +119,7 @@ public class TransactionalCache implements Cache {
     reset();
   }
 
+  // 重新缓存，清除TransactionalCache中的所有缓存
   private void reset() {
     clearOnCommit = false;
     entriesToAddOnCommit.clear();
@@ -112,11 +127,15 @@ public class TransactionalCache implements Cache {
   }
 
   private void flushPendingEntries() {
+	 // 将TransactionalCache中的缓存数据 存入 PerpetualCache里的cache = new HashMap<>();中
     for (Map.Entry<Object, Object> entry : entriesToAddOnCommit.entrySet()) {
       delegate.putObject(entry.getKey(), entry.getValue());
     }
+    
+    // 将之前没有获取到的key,存入HashMap中
     for (Object entry : entriesMissedInCache) {
       if (!entriesToAddOnCommit.containsKey(entry)) {
+    	 // value值存空
         delegate.putObject(entry, null);
       }
     }

@@ -29,6 +29,7 @@ public class CacheKey implements Cloneable, Serializable {
 
   private static final long serialVersionUID = 1146682552656046210L;
 
+  // 不启用缓存时，调用update 和 updateAll会抛出异常 
   public static final CacheKey NULL_CACHE_KEY = new CacheKey() {
 
     @Override
@@ -41,14 +42,14 @@ public class CacheKey implements Cloneable, Serializable {
       throw new CacheException("Not allowed to update a null cache key instance.");
     }
   };
-
-  private static final int DEFAULT_MULTIPLIER = 37;
-  private static final int DEFAULT_HASHCODE = 17;
+  
+  private static final int DEFAULT_MULTIPLIER = 37;	// 默认乘数
+  private static final int DEFAULT_HASHCODE = 17; // 默认hashcode
 
   private final int multiplier;
   private int hashcode;
   private long checksum;
-  private int count;
+  private int count; //缓存数量
   // 8/21/2017 - Sonarlint flags this as needing to be marked transient. While true if content is not serializable, this
   // is not always true and thus should not be marked transient.
   private List<Object> updateList;
@@ -70,9 +71,17 @@ public class CacheKey implements Cloneable, Serializable {
   }
 
   public void update(Object object) {
-    int baseHashCode = object == null ? 1 : ArrayUtil.hashCode(object);
-
+	 // 确定hashCode值
+	  /*
+   			int result = 1;
+        	for (int element : a)
+            	result = 31 * result + element;
+            	
+	   */
+    // 添加一个元素
+	  int baseHashCode = object == null ? 1 : ArrayUtil.hashCode(object);
     count++;
+    // 检查和计算hashcode值
     checksum += baseHashCode;
     baseHashCode *= count;
 
