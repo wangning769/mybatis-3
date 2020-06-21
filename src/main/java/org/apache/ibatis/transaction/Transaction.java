@@ -24,6 +24,10 @@ import java.sql.SQLException;
  *
  * @author Clinton Begin
  */
+
+/**
+ * 事务接口
+ */
 public interface Transaction {
 
   /**

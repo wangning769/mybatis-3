@@ -24,17 +24,22 @@ public class GenericTokenParser {
   private final String closeToken;
   private final TokenHandler handler;
 
+  /*
+    openToken:  ${ 或 #{ 或 @{
+    closeToken: }
+   */
   public GenericTokenParser(String openToken, String closeToken, TokenHandler handler) {
     this.openToken = openToken;
     this.closeToken = closeToken;
     this.handler = handler;
   }
 
+  // 例子 ${first_name} ${initial} ${last_name}
   public String parse(String text) {
     if (text == null || text.isEmpty()) {
       return "";
     }
-    // search open token
+    // search open token #{  ${
     int start = text.indexOf(openToken);
     if (start == -1) {
       return text;
@@ -44,6 +49,7 @@ public class GenericTokenParser {
     final StringBuilder builder = new StringBuilder();
     StringBuilder expression = null;
     while (start > -1) {
+      //获取openToken位置,并且在前一个位置是\\转义
       if (start > 0 && src[start - 1] == '\\') {
         // this open token is escaped. remove the backslash and continue.
         builder.append(src, offset, start - offset - 1).append(openToken);
