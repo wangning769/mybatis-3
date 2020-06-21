@@ -55,9 +55,9 @@ public class LruCache implements Cache {
     keyMap = new LinkedHashMap<Object, Object>(size, .75F, true) {
       private static final long serialVersionUID = 4267176411845948333L;
 
+      // 重写该方法，该方法会在返回true的情况下，删除最古老的元素，也就是eldest
       @Override
       protected boolean removeEldestEntry(Map.Entry<Object, Object> eldest) {
-
         //超过缓存大小时
         boolean tooBig = size() > size;
         if (tooBig) {
