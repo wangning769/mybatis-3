@@ -20,6 +20,10 @@ import org.apache.ibatis.cache.Cache;
 /**
  * @author Clinton Begin
  */
+/**
+ * 
+ *同步缓存,对大部分方法上锁
+ */
 public class SynchronizedCache implements Cache {
 
   private final Cache delegate;

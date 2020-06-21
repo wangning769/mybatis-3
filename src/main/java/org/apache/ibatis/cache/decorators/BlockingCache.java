@@ -35,13 +35,13 @@ import org.apache.ibatis.cache.CacheException;
  */
 /**
  *	阻塞缓存 
- *
+ * locks存放每个key的锁
  */
 public class BlockingCache implements Cache {
 
   private long timeout;
   private final Cache delegate;
-  private final ConcurrentHashMap<Object, ReentrantLock> locks;
+  private final ConcurrentHashMap<Object, ReentrantLock> locks;// key - 锁
 
   public BlockingCache(Cache delegate) {
     this.delegate = delegate;
@@ -69,6 +69,7 @@ public class BlockingCache implements Cache {
 
   @Override
   public Object getObject(Object key) {
+	 //当前key是否被锁住
     acquireLock(key);
     Object value = delegate.getObject(key);
     if (value != null) {
@@ -90,14 +91,27 @@ public class BlockingCache implements Cache {
   }
 
   private ReentrantLock getLockForKey(Object key) {
+//		JDK1.8之前
+//		Object val = map.get("key");
+//		if(val == null) {
+//			val = new Object();
+//			map.put("key", val);
+//		}
+//		JDK1.8之后		
+//		map.computeIfAbsent("key", k -> new Object());
     return locks.computeIfAbsent(key, k -> new ReentrantLock());
   }
 
+  // 获取锁
   private void acquireLock(Object key) {
     Lock lock = getLockForKey(key);
+    
+    // 如果设置超时时间
     if (timeout > 0) {
       try {
+    	// 在超时时间内获取该锁
         boolean acquired = lock.tryLock(timeout, TimeUnit.MILLISECONDS);
+        // 没有获取到该锁，抛异常
         if (!acquired) {
           throw new CacheException("Couldn't get a lock in " + timeout + " for the key " +  key + " at the cache " + delegate.getId());
         }
@@ -105,12 +119,15 @@ public class BlockingCache implements Cache {
         throw new CacheException("Got interrupted while trying to acquire lock for key " + key, e);
       }
     } else {
+    	//上锁
       lock.lock();
     }
   }
 
+  //释放锁
   private void releaseLock(Object key) {
     ReentrantLock lock = locks.get(key);
+    //如果该锁被当前线程持有
     if (lock.isHeldByCurrentThread()) {
       lock.unlock();
     }

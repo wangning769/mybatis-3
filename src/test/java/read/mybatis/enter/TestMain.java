@@ -1,5 +1,8 @@
 package read.mybatis.enter;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+
 import org.apache.ibatis.cache.Cache;
 import org.apache.ibatis.cache.decorators.TransactionalCache;
 import org.apache.ibatis.cache.impl.PerpetualCache;

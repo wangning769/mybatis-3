@@ -25,10 +25,14 @@ import org.apache.ibatis.cache.Cache;
  *
  * @author Clinton Begin
  */
+
+/**
+ * 队列缓存
+ */
 public class FifoCache implements Cache {
 
   private final Cache delegate;
-  private final Deque<Object> keyList;
+  private final Deque<Object> keyList;  //队列链表实现
   private int size;
 
   public FifoCache(Cache delegate) {
@@ -47,6 +51,7 @@ public class FifoCache implements Cache {
     return delegate.getSize();
   }
 
+  //可初始化大小，默认1024个
   public void setSize(int size) {
     this.size = size;
   }
@@ -73,10 +78,15 @@ public class FifoCache implements Cache {
     keyList.clear();
   }
 
+  //回收策略
   private void cycleKeyList(Object key) {
+    // 将元素放置链表末尾
     keyList.addLast(key);
+    // 如果链表中元素 > 设置大小
     if (keyList.size() > size) {
+      //移除链表第一个元素
       Object oldestKey = keyList.removeFirst();
+      //在缓存中也删除该元素
       delegate.removeObject(oldestKey);
     }
   }

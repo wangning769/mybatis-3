@@ -28,12 +28,13 @@ import org.apache.ibatis.cache.Cache;
 /**
  *
  * LRU(最近最少使用的缓存)
+ * delegate中的HashMap并不负责回收，而实
  */
 public class LruCache implements Cache {
 
-  private final Cache delegate;
-  private Map<Object, Object> keyMap;
-  private Object eldestKey;
+  private final Cache delegate; // 缓存实现类
+  private Map<Object, Object> keyMap; // 存放Key值
+  private Object eldestKey; //旧 key
 
   public LruCache(Cache delegate) {
     this.delegate = delegate;
@@ -56,8 +57,11 @@ public class LruCache implements Cache {
 
       @Override
       protected boolean removeEldestEntry(Map.Entry<Object, Object> eldest) {
+
+        //超过缓存大小时
         boolean tooBig = size() > size;
         if (tooBig) {
+          //eldestKey为最古老的key，暂存起来，后面回收掉
           eldestKey = eldest.getKey();
         }
         return tooBig;
@@ -73,7 +77,7 @@ public class LruCache implements Cache {
 
   @Override
   public Object getObject(Object key) {
-    keyMap.get(key); // touch
+    keyMap.get(key);
     return delegate.getObject(key);
   }
 
