@@ -21,8 +21,9 @@ import org.apache.ibatis.cache.Cache;
  * @author Clinton Begin
  */
 /**
- * 
+ *
  *同步缓存,对大部分方法上锁
+ * 但是并不锁delegate，会有查询和修改并发操作导致的问题
  */
 public class SynchronizedCache implements Cache {
 

@@ -22,6 +22,10 @@ import org.apache.ibatis.cache.Cache;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 定时清理全部缓存
+ */
 public class ScheduledCache implements Cache {
 
   private final Cache delegate;
@@ -68,6 +72,7 @@ public class ScheduledCache implements Cache {
 
   @Override
   public void clear() {
+    //重新赋值最近清除时间
     lastClear = System.currentTimeMillis();
     delegate.clear();
   }
@@ -82,7 +87,11 @@ public class ScheduledCache implements Cache {
     return delegate.equals(obj);
   }
 
+  /*
+    清理缓存策略,在获取元素时会优先调用该方法，确认是否需要清除缓存
+   */
   private boolean clearWhenStale() {
+    //当前时间 - 最近时间清除时间 > 设置清除时间
     if (System.currentTimeMillis() - lastClear > clearInterval) {
       clear();
       return true;

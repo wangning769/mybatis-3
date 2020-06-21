@@ -70,12 +70,16 @@ public class SoftCache implements Cache {
     if (softReference != null) {
       result = softReference.get();
       if (result == null) {
+        //如果key在软引用中不存在，则将集合里的元素回收
         delegate.removeObject(key);
       } else {
         // See #586 (and #335) modifications need more than a read lock
-        synchronized (hardLinksToAvoidGarbageCollection) {
+        synchronized (hardLinksToAvoidGarbageCollection) { // 锁住该集合
+          //放到链表头部
           hardLinksToAvoidGarbageCollection.addFirst(result);
+          //如果链表数据大于设置可以容纳的链表元素个数
           if (hardLinksToAvoidGarbageCollection.size() > numberOfHardLinks) {
+            //删除链表最末尾的元素
             hardLinksToAvoidGarbageCollection.removeLast();
           }
         }
@@ -92,6 +96,7 @@ public class SoftCache implements Cache {
 
   @Override
   public void clear() {
+    //清除时需要加锁，防止被get方法获取元素
     synchronized (hardLinksToAvoidGarbageCollection) {
       hardLinksToAvoidGarbageCollection.clear();
     }
@@ -99,8 +104,10 @@ public class SoftCache implements Cache {
     delegate.clear();
   }
 
+  //清除垃圾收集的所有条目
   private void removeGarbageCollectedItems() {
     SoftEntry sv;
+    // 将引用队列里的数据全部清空
     while ((sv = (SoftEntry) queueOfGarbageCollectedEntries.poll()) != null) {
       delegate.removeObject(sv.key);
     }

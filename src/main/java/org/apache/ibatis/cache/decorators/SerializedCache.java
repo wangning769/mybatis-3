@@ -31,6 +31,13 @@ import org.apache.ibatis.io.Resources;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 序列化缓存
+ * 将对象进行序列化-字节存储，获取时进行反序列化
+ * key1(object)- value1(byte[])
+ * key2(object)- value2(byte[])
+ */
 public class SerializedCache implements Cache {
 
   private final Cache delegate;
@@ -52,6 +59,7 @@ public class SerializedCache implements Cache {
   @Override
   public void putObject(Object key, Object object) {
     if (object == null || object instanceof Serializable) {
+      //key - byte[] 方式缓存
       delegate.putObject(key, serialize((Serializable) object));
     } else {
       throw new CacheException("SharedCache failed to make a copy of a non-serializable object: " + object);
@@ -84,17 +92,20 @@ public class SerializedCache implements Cache {
     return delegate.equals(obj);
   }
 
+  //序列化操作，转换成字节数组
   private byte[] serialize(Serializable value) {
     try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(bos)) {
       oos.writeObject(value);
       oos.flush();
+      //转换成字节数组
       return bos.toByteArray();
     } catch (Exception e) {
       throw new CacheException("Error serializing object.  Cause: " + e, e);
     }
   }
 
+  //反序列化操作
   private Serializable deserialize(byte[] value) {
     Serializable result;
     try (ByteArrayInputStream bis = new ByteArrayInputStream(value);
