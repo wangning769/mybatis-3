@@ -30,6 +30,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
+import com.sun.xml.internal.ws.util.xml.CDATA;
 import org.apache.ibatis.builder.BuilderException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -227,21 +228,34 @@ public class XPathParser {
     }
   }
 
+  /**
+   *  初始化文档，解析DOM
+   */
   private Document createDocument(InputSource inputSource) {
     // important: this must only be called AFTER common constructor
     try {
+      //DOM 解析器的工厂
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      //true：该实现将限制 XML 处理遵守实现限制。示例包括实体扩展限制和将使用大量资源的 XML 模式构造。
+      //false：实现将根据 XML 规范来处理 XML，而无需考虑可能的实现限制。
       factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+      //指定由此代码生成的解析器将验证被解析的文档。
       factory.setValidating(validation);
-
+      //由此代码生成的解析器将提供对 XML 名称空间的支持
       factory.setNamespaceAware(false);
+      //解析器将忽略注释
       factory.setIgnoringComments(true);
+      //可忽略空格
       factory.setIgnoringElementContentWhitespace(false);
+      //解析器将把 CDATA 节点转换为 Text 节点
       factory.setCoalescing(false);
+      //解析器将扩展实体引用节点
       factory.setExpandEntityReferences(true);
 
       DocumentBuilder builder = factory.newDocumentBuilder();
+      //设置解析器
       builder.setEntityResolver(entityResolver);
+      //解析器使用的ErrorHandler
       builder.setErrorHandler(new ErrorHandler() {
         @Override
         public void error(SAXParseException exception) throws SAXException {
@@ -264,6 +278,9 @@ public class XPathParser {
     }
   }
 
+  /**
+   * 通用构造方法
+   */
   private void commonConstructor(boolean validation, Properties variables, EntityResolver entityResolver) {
     this.validation = validation;
     this.entityResolver = entityResolver;

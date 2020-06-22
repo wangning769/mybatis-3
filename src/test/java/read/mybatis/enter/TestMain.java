@@ -7,16 +7,19 @@ import org.apache.ibatis.cache.Cache;
 import org.apache.ibatis.cache.decorators.TransactionalCache;
 import org.apache.ibatis.cache.impl.PerpetualCache;
 import org.apache.ibatis.logging.LogFactory;
+import org.apache.ibatis.parsing.GenericTokenParser;
+import org.apache.ibatis.parsing.PropertyParser;
+import org.apache.ibatis.parsing.TokenHandler;
 
 public class TestMain {
 
 	public static void main(String[] args) {
 
-		
+
 		LogFactory.useLog4J2Logging();
-		
+
 		//Cache
-		
+
 	    Cache cache = new PerpetualCache("default");
 	    cache = new TransactionalCache(cache);
 	    System.out.println(cache.getSize());
